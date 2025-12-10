@@ -3,7 +3,7 @@ import random
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from Alg import Algorithm as al
+
 
 
 
@@ -172,7 +172,7 @@ def visualize_cities(world, path=None):
             plt.plot(x_coords, y_coords, 'gray', alpha=0.3, linewidth=0.5)
 
     # Plot cities as points
-    plt.scatter(xs, ys, color='red', s=100, zorder=5)
+    plt.scatter(xs, ys, color='red', s=150, zorder=5)
 
     # Label each city
     for i, city in enumerate(world.cities):
@@ -183,24 +183,28 @@ def visualize_cities(world, path=None):
             c1 = world.cities[path[i]]
             c2 = world.cities[path[i + 1]]
 
+            print(c1,c2)
             plt.plot(
                 [c1.x, c2.x],
                 [c1.y, c2.y],
                 color='blue', linewidth=3.0, zorder=10
             )
 
+    print(path)
     start_city = world.cities[path[0]]
     plt.scatter(start_city.x, start_city.y, s=180, color='green', zorder=15)
     plt.text(start_city.x, start_city.y - 3, "START", color='green', fontsize=10, ha='center', weight='bold')
 
     for order, city_index in enumerate(path):
         # print(order, city_index)
+        # print(world.cities[city_index])
         city_obj = world.cities[city_index]
+        # print(city_obj.x)
 
         plt.text(
-            city_obj.x, city_obj.y + 4,
-            str(city_index),  # Correct numbering based on best path
-            color='blue',
+            city_obj.x, city_obj.y -.5,
+            str(city_index), 
+            color='white',
             fontsize=10,
             ha='center',
             weight='bold',
@@ -210,23 +214,8 @@ def visualize_cities(world, path=None):
     plt.xlabel("X")
     plt.ylabel("Y")
     plt.title("City Map Visualization (All Cities Connected)")
+    path_str = " → ".join(map(str, path))
+    plt.text(0.5, 1.08, f"Path: {path_str}", transform=plt.gca().transAxes,
+             fontsize=12, ha='center', va='top', weight='bold', color='blue')
     plt.show()
 
-
-# ======================================================
-# ----------------------- MAIN -------------------------
-# ======================================================
-
-if __name__ == "__main__":
-    try:
-        cities = generate_random_cities(10)
-        world = Map(cities)
-        solver = al.AntColonyOptimizer(10)
-        p , c ,t = solver.solve(world.distance_matrix,world.velocity_matrix,world.traffic_matrix,world.consumption_matrix,0.5)
-        path = [int(x) for x in p]
-        print(t)
-        print(path)
-        print(c)
-        visualize_cities(world,path)
-    except:
-        print("time weight must be between 0 and 1")
