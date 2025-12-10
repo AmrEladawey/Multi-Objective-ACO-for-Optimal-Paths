@@ -3,7 +3,9 @@ import random
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
+from Alg import Algorithm as al
+
+
 
 
 # ======================================================
@@ -18,7 +20,7 @@ class City:
 
     def distance_to(self, other_city):
         # Correct Euclidean distance: (x2 - x1)^2 + (y2 - y1)^2
-        return math.sqrt((self.x - other_city.x)**2 + (self.y - other_city.y)**2)
+        return math.sqrt((self.x - other_city.x) ** 2 + (self.y - other_city.y) ** 2)
 
     def __repr__(self):
         return f"City({self.id}, x={self.x:.2f}, y={self.y:.2f})"
@@ -64,7 +66,7 @@ class Map:
         for i in range(n):
             for j in range(n):
                 if i == j:
-                    matrix[i][j] = 0
+                    matrix[i][j] = -1
                 else:
                     matrix[i][j] = random.choice([40, 60, 80, 100, 120])
 
@@ -110,7 +112,7 @@ class Map:
         for i in range(n):
             for j in range(n):
                 speed = int(self.velocity_matrix[i][j])
-                if speed == 0:
+                if speed == -1:
                     matrix[i][j] = 0
                     continue
 
@@ -150,7 +152,7 @@ def load_cities_from_csv(path):
 # ------------------- VISUALIZATION --------------------
 # ======================================================
 
-def visualize_cities(world,path=None):
+def visualize_cities(world, path=None):
     """
     Visualize the cities stored in the Map object.
     Each city will be plotted with its index.
@@ -161,14 +163,14 @@ def visualize_cities(world,path=None):
     ys = [city.y for city in world.cities]
 
     plt.figure(figsize=(7, 7))
-    
+
     # Draw lines connecting all cities to each other
     for i in range(len(world.cities)):
         for j in range(i + 1, len(world.cities)):
             x_coords = [world.cities[i].x, world.cities[j].x]
             y_coords = [world.cities[i].y, world.cities[j].y]
             plt.plot(x_coords, y_coords, 'gray', alpha=0.3, linewidth=0.5)
-    
+
     # Plot cities as points
     plt.scatter(xs, ys, color='red', s=100, zorder=5)
 
@@ -189,24 +191,21 @@ def visualize_cities(world,path=None):
 
     start_city = world.cities[path[0]]
     plt.scatter(start_city.x, start_city.y, s=180, color='green', zorder=15)
-    plt.text(start_city.x, start_city.y - 3, "START",color='green', fontsize=10, ha='center', weight='bold')
-
-    
+    plt.text(start_city.x, start_city.y - 3, "START", color='green', fontsize=10, ha='center', weight='bold')
 
     for order, city_index in enumerate(path):
-            print(order, city_index)
-            city_obj = world.cities[city_index]
+        # print(order, city_index)
+        city_obj = world.cities[city_index]
 
-            plt.text(
-        city_obj.x,
-        city_obj.y + 4,
-        str(order),     # display order number
-        color='blue',
-        fontsize=10,
-        ha='center',
-        weight='bold'
-)
-
+        plt.text(
+            city_obj.x, city_obj.y + 4,
+            str(city_index),  # Correct numbering based on best path
+            color='blue',
+            fontsize=10,
+            ha='center',
+            weight='bold',
+            zorder=20
+        )
 
     plt.xlabel("X")
     plt.ylabel("Y")
@@ -214,3 +213,20 @@ def visualize_cities(world,path=None):
     plt.show()
 
 
+# ======================================================
+# ----------------------- MAIN -------------------------
+# ======================================================
+
+if __name__ == "__main__":
+    try:
+        cities = generate_random_cities(10)
+        world = Map(cities)
+        solver = al.AntColonyOptimizer(10)
+        p , c ,t = solver.solve(world.distance_matrix,world.velocity_matrix,world.traffic_matrix,world.consumption_matrix,0.5)
+        path = [int(x) for x in p]
+        print(t)
+        print(path)
+        print(c)
+        visualize_cities(world,path)
+    except:
+        print("time weight must be between 0 and 1")

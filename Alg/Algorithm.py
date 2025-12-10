@@ -2,7 +2,7 @@ import numpy as np
 import random
 
 class AntColonyOptimizer:
-    def __init__(self, num_ants, num_cities, alpha=1.0, beta=2.0, evaporation_rate=0.5):
+    def __init__(self, num_cities, alpha=1.0, beta=2.0, evaporation_rate=0.5):
         """
         Args:
             num_ants (int): Number of ants in the colony.
@@ -59,7 +59,7 @@ class AntColonyOptimizer:
             # Step 4: Each ant constructs a path
             for _ in range(self.num_ants):
                 path = self._construct_path(heuristic_matrix)
-                cost = self._evaluate_path_cost(path, time_mat, cost_mat, time_w)
+                cost , time = self._evaluate_path_cost(path, time_mat, cost_mat, time_w)
                 
                 # ### CHANGE 1: Save path instead of depositing immediately
                 all_paths.append(path)
@@ -78,7 +78,7 @@ class AntColonyOptimizer:
             for path, cost in zip(all_paths, all_costs):
                 self._deposit_pheromone(path, cost)
         
-        return best_path, best_cost
+        return best_path, best_cost , time
 
     def _calculate_heuristic(self, dist_mat, vel_mat, traffic_mat, consum_mat, time_weight):
         """
@@ -186,6 +186,6 @@ class AntColonyOptimizer:
 
         fuel_w = 1.0 - time_w
         cost = time_w * total_time + fuel_w * total_fuel
-        return cost
+        return cost , total_time
 
 
