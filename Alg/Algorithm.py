@@ -11,8 +11,8 @@ class AntColonyOptimizer:
             beta (float): Importance of Heuristic (Distance/Cost).
             evaporation_rate (float): How fast pheromones disappear (0.0 - 1.0).
         """
-        self.num_ants = num_ants
         self.num_cities = num_cities
+        self.num_ants = num_cities
         self.alpha = alpha
         self.beta = beta
         self.rho = evaporation_rate
@@ -187,4 +187,5 @@ class AntColonyOptimizer:
         fuel_w = 1.0 - time_w
         cost = time_w * total_time + fuel_w * total_fuel
         return cost
+
 
