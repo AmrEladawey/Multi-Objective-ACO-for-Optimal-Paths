@@ -20,9 +20,65 @@ class AntColonyOptimizer:
         # Pheromone Matrix: Starts with 1.0 everywhere
         self.pheromone = np.ones((num_cities, num_cities))
 
-    def solve():
-        # TODO: do the solve algorithm
-        return None
+    def solve(self, dist_mat, vel_mat, traffic_mat, consum_mat, time_w, iterations=100):
+        """
+        Main ACO engine using proper inputs.
+        
+        Args:
+            dist_mat: Distance between cities
+            vel_mat: Velocity between cities
+            traffic_mat: Traffic delays
+            consum_mat: Fuel consumption
+            time_w: Slider weight for time vs fuel
+            iterations: Number of generations
+        
+        Returns:
+            best_path, best_cost
+        """
+        
+        # Step 1: Calculate heuristic matrix
+        heuristic_matrix = self._calculate_heuristic(dist_mat, vel_mat, traffic_mat, consum_mat, time_w)
+        # Fuel Price 
+        fuel = 20
+
+        # Calculate Formulas
+        time_mat = (dist_mat / (vel_mat + 1e-9)) + traffic_mat
+        cost_mat = consum_mat * dist_mat * fuel
+        
+        # Step 2: Initialize best path and cost
+        best_path = None
+        best_cost = float('inf')
+        
+        # Step 3: Run generations
+        for gen in range(iterations):
+            
+            # ### NEW: Create lists to store info for later
+            all_paths = []
+            all_costs = []
+
+            # Step 4: Each ant constructs a path
+            for _ in range(self.num_ants):
+                path = self._construct_path(heuristic_matrix)
+                cost = self._evaluate_path_cost(path, time_mat, cost_mat, time_w)
+                
+                # ### CHANGE 1: Save path instead of depositing immediately
+                all_paths.append(path)
+                all_costs.append(cost)
+
+                # Step 5: Update best path (This stays same)
+                if cost < best_cost:
+                    best_cost = cost
+                    best_path = path
+            
+            # ### CHANGE 2: Evaporate BEFORE depositing new scent
+            self.pheromone *= (1.0 - self.rho)
+            
+            # ### CHANGE 3: Batch Deposit
+            # Now we update the map for everyone at the same time
+            for path, cost in zip(all_paths, all_costs):
+                self._deposit_pheromone(path, cost)
+        
+        return best_path, best_cost
 
     def _calculate_heuristic(self, dist_mat, vel_mat, traffic_mat, consum_mat, time_weight):
         """
@@ -120,33 +176,15 @@ class AntColonyOptimizer:
             self.pheromone[v][u] += deposit_amount # Symmetric graph
 
     def _evaluate_path_cost(self, path, time_mat, fuel_mat, time_w):
-        # TODO: Calculates total cost of a specific path
+        total_time = 0.0
+        total_fuel = 0.0
+        
+        for i in range(len(path) - 1):
+            u, v = path[i], path[i+1]
+            total_time += time_mat[u][v]
+            total_fuel += fuel_mat[u][v]
+
+        fuel_w = 1.0 - time_w
+        cost = time_w * total_time + fuel_w * total_fuel
         return cost
 
-# --- TEST BLOCK (For Member A/B to verify it works) ---
-if __name__ == "__main__":
-    # Fake Data (provided by Member E)
-    num_cities = 5
-    
-    # 1. Create Fake Time Matrix (0-10 hours)
-    time_data = np.random.rand(num_cities, num_cities) * 10 
-    np.fill_diagonal(time_data, 0) # Distance to self is 0
-
-    # 2. Create Fake Fuel Matrix (0-100 liters)
-    fuel_data = np.random.rand(num_cities, num_cities) * 100
-    np.fill_diagonal(fuel_data, 0)
-
-    # 3. Initialize ACO
-    aco = AntColonyOptimizer(num_ants=10, num_cities=num_cities)
-    
-    # 4. Run with High Importance on TIME (0.9)
-    print("Optimizing for TIME...")
-    path, cost = aco.solve(time_data, fuel_data, time_importance=0.9)
-    print(f"Best Path: {path}")
-    print(f"Weighted Cost: {cost:.2f}")
-
-    # 5. Run with High Importance on FUEL (0.1)
-    print("\nOptimizing for FUEL...")
-    path, cost = aco.solve(time_data, fuel_data, time_importance=0.1)
-    print(f"Best Path: {path}")
-    print(f"Weighted Cost: {cost:.2f}")
