@@ -274,3 +274,4 @@ def create_animation(world, path):
 
     ani = animation.FuncAnimation(fig, update, frames=len(route_x), interval=50, blit=False, repeat=True)
     return ani.to_jshtml(default_mode='loop')
+
