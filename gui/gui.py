@@ -30,7 +30,7 @@ def static_cities_optimization_process(myTimeWeight,seed):
     plt.clf()
     random.seed(seed)
     np.random.seed(seed)
-    cities = generate_random_cities(10)
+    cities = generate_random_cities(7)
     world = Map(cities)
     dist_mat = world.distance_matrix
     vel_mat = world.velocity_matrix
@@ -74,7 +74,6 @@ with col2:
     st.markdown("<div style='text-align: right;'><span class='time-label'>TIME PRIORITY 🕒</span><br><span class='time-sub'>(Urgent Delivery)</span></div>", unsafe_allow_html=True)
 
 optimization_value = st.slider(label="", min_value=0.0, max_value=1.0, value=0.5, step=0.1)
-
 fuel_pct = int(optimization_value * 100)
 time_pct = int((1 - optimization_value) * 100)
 
